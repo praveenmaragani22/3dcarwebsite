@@ -1,0 +1,1230 @@
+/* ==========================================================================
+   NOCTIS — Stylesheet
+   Strict Design Language: No gradients, no glassmorphism, no glows, no shadows.
+   Only flat solid colors, 1px hairlines, photography, and pure typography.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Design Tokens
+   -------------------------------------------------------------------------- */
+:root {
+  --asphalt: #07080A;
+  --graphite: #121418;
+  --fog: #8A8F98;
+  --bone: #EDEAE4;
+  --xenon: #CFE3FF;
+  --taillight: #E1251B;
+  --hairline: rgba(237, 234, 228, 0.12);
+  --hairline-solid: #21242B;
+
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --font-display: 'Archivo', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-hud: 'JetBrains Mono', monospace;
+
+  --nav-height: 64px;
+}
+
+/* --------------------------------------------------------------------------
+   Reset & Base Styles
+   -------------------------------------------------------------------------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  background-color: var(--asphalt);
+  color: var(--bone);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* CRITICAL: Never overflow: hidden on html/body as it breaks sticky stages */
+  overflow-x: clip;
+}
+
+body {
+  background-color: var(--asphalt);
+  color: var(--bone);
+  overflow-x: clip;
+  min-height: 100vh;
+  position: relative;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+/* --------------------------------------------------------------------------
+   Typography Utility Classes
+   -------------------------------------------------------------------------- */
+.font-display {
+  font-family: var(--font-display);
+  font-stretch: 125%;
+  font-weight: 300;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 0.95;
+}
+
+.font-hud {
+  font-family: var(--font-hud);
+  font-weight: 400;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--fog);
+}
+
+.font-body {
+  font-family: var(--font-body);
+  font-size: clamp(15px, 1.1vw, 17px);
+  line-height: 1.6;
+  max-width: 52ch;
+  color: var(--fog);
+}
+
+/* Line-reveal masking container */
+.line-mask {
+  display: block;
+  overflow: hidden;
+  vertical-align: top;
+}
+
+.line-inner {
+  display: block;
+  transform: translateY(100%);
+  transition: transform 0.9s var(--ease);
+  will-change: transform;
+}
+
+.line-inner.revealed {
+  transform: translateY(0);
+}
+
+/* --------------------------------------------------------------------------
+   Film-Grain Canvas (Strictly Flat Noise, No Vignette, No Gradient)
+   -------------------------------------------------------------------------- */
+#grain-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 998;
+  opacity: 0.035;
+}
+
+/* --------------------------------------------------------------------------
+   Custom Headlight Cursor (Desktop Only)
+   -------------------------------------------------------------------------- */
+@media (pointer: fine) {
+  body.has-custom-cursor,
+  body.has-custom-cursor a,
+  body.has-custom-cursor button,
+  body.has-custom-cursor [role="button"] {
+    cursor: none !important;
+  }
+}
+
+#custom-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  will-change: transform, width, height;
+}
+
+@media (pointer: fine) {
+  #custom-cursor {
+    display: flex;
+  }
+}
+
+/* Default Headlight Cursor: 6px solid dot inside 28px ring */
+.cursor-ring {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--xenon);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: width 0.28s var(--ease), height 0.28s var(--ease), border-radius 0.28s var(--ease), background-color 0.12s var(--ease), border-color 0.12s var(--ease);
+}
+
+.cursor-dot {
+  width: 6px;
+  height: 6px;
+  background-color: var(--xenon);
+  border-radius: 50%;
+  transition: opacity 0.2s var(--ease), transform 0.2s var(--ease);
+}
+
+.cursor-label {
+  position: absolute;
+  left: 52px;
+  font-family: var(--font-hud);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--xenon);
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 0.2s var(--ease), transform 0.2s var(--ease);
+}
+
+/* Hover State: Morphs into 44x2px horizontal light bar with label */
+#custom-cursor.is-hovering .cursor-ring {
+  width: 44px;
+  height: 2px;
+  border-radius: 0;
+  border: none;
+  background-color: var(--xenon);
+}
+
+#custom-cursor.is-hovering .cursor-dot {
+  opacity: 0;
+  transform: scale(0);
+}
+
+#custom-cursor.is-hovering .cursor-label {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Mousedown State: 120ms Brighter Light Signature */
+#custom-cursor.is-active .cursor-ring {
+  background-color: #FFFFFF !important;
+}
+
+#custom-cursor.is-active .cursor-dot {
+  background-color: #FFFFFF !important;
+}
+
+/* --------------------------------------------------------------------------
+   Preloader
+   -------------------------------------------------------------------------- */
+#preloader {
+  position: fixed;
+  inset: 0;
+  background-color: var(--asphalt);
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.8s var(--ease);
+  pointer-events: auto;
+}
+
+#preloader.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.preloader-wordmark {
+  font-size: clamp(36px, 6vw, 72px);
+  margin-bottom: 32px;
+}
+
+.preloader-track {
+  width: 240px;
+  height: 1px;
+  background-color: var(--hairline);
+  position: relative;
+  overflow: visible;
+  margin-bottom: 24px;
+}
+
+.preloader-line {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0%;
+  height: 1px;
+  background-color: var(--xenon);
+  transition: width 0.1s linear, background-color 0.12s var(--ease);
+}
+
+.preloader-counter {
+  font-family: var(--font-hud);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: var(--fog);
+}
+
+/* --------------------------------------------------------------------------
+   Navigation Bar (Fixed, Transparent, Mix-Blend-Mode: Difference)
+   -------------------------------------------------------------------------- */
+#navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: var(--nav-height);
+  z-index: 500;
+  mix-blend-mode: difference;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 clamp(24px, 5vw, 64px);
+  transition: transform 0.4s var(--ease);
+}
+
+#navbar.nav-hidden {
+  transform: translateY(-100%);
+}
+
+.nav-wordmark {
+  font-family: var(--font-display);
+  font-stretch: 125%;
+  font-weight: 400;
+  font-size: 20px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #FFFFFF;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  list-style: none;
+}
+
+.nav-link {
+  font-family: var(--font-hud);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: #FFFFFF;
+  position: relative;
+  padding: 8px 0;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background-color: #FFFFFF;
+  transition: width 0.3s var(--ease);
+}
+
+.nav-link:hover::after,
+.nav-link:focus-visible::after {
+  width: 100%;
+}
+
+/* --------------------------------------------------------------------------
+   Scrollytelling Stages & Canvas
+   -------------------------------------------------------------------------- */
+.scrolly-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.scrolly-stage {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  background-color: var(--asphalt);
+}
+
+.scrolly-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* 1px Xenon Bottom Progress Line */
+.scrolly-progress-line {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background-color: var(--xenon);
+  transform-origin: left;
+  transform: scaleX(0);
+  z-index: 40;
+}
+
+/* --------------------------------------------------------------------------
+   Section 1 — Hero Specific Layout
+   -------------------------------------------------------------------------- */
+#hero-wrapper {
+  height: 600vh;
+}
+
+/* Canvas blackout overlay for final 5% */
+#hero-fade-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: var(--asphalt);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 20;
+}
+
+/* Left-Edge HUD */
+.hero-hud {
+  position: absolute;
+  left: clamp(24px, 4vw, 48px);
+  bottom: clamp(32px, 6vh, 64px);
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.hud-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hud-chapter-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hud-tick {
+  width: 2px;
+  height: 10px;
+  background-color: var(--taillight);
+}
+
+.hud-telemetry {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hud-telemetry-row {
+  display: flex;
+  gap: 12px;
+}
+
+.hud-val {
+  color: var(--bone);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Chapters Text Placed in Empty Sky (Top 35% of Screen) */
+.hero-sky-container {
+  position: absolute;
+  top: clamp(80px, 12vh, 120px);
+  left: clamp(24px, 5vw, 64px);
+  right: clamp(24px, 5vw, 64px);
+  z-index: 30;
+  pointer-events: none;
+}
+
+.hero-chapter {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.6s var(--ease), transform 0.6s var(--ease);
+  pointer-events: none;
+}
+
+.hero-chapter.is-active {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.hero-title {
+  font-size: clamp(48px, 9vw, 130px);
+  color: var(--bone);
+  margin-bottom: 12px;
+}
+
+.hero-subtitle {
+  font-family: var(--font-body);
+  font-size: clamp(16px, 1.4vw, 20px);
+  color: var(--bone);
+  margin-bottom: 24px;
+}
+
+.scroll-wake-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-hud);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: var(--fog);
+}
+
+.pulse-line {
+  width: 48px;
+  height: 1px;
+  background-color: var(--fog);
+  animation: pulse-line-anim 2.4s ease-in-out infinite;
+}
+
+@keyframes pulse-line-anim {
+  0%, 100% { opacity: 0.2; transform: scaleX(0.7); }
+  50% { opacity: 1; transform: scaleX(1); }
+}
+
+.hero-statement-text {
+  font-family: var(--font-display);
+  font-size: clamp(32px, 5vw, 64px);
+  line-height: 1.1;
+  color: var(--bone);
+  max-width: 24ch;
+}
+
+.hero-gte-specs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 24px;
+  margin-top: 16px;
+  margin-bottom: 24px;
+}
+
+.hero-discover-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-hud);
+  font-size: 11px;
+  color: var(--xenon);
+  letter-spacing: 0.14em;
+  border-bottom: 1px solid var(--xenon);
+  padding-bottom: 2px;
+  transition: color 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+
+.hero-discover-link:hover {
+  color: #FFFFFF;
+  border-color: #FFFFFF;
+}
+
+/* --------------------------------------------------------------------------
+   Section 2 — Statement (Word by Word Opacity Reveal, 100vh)
+   -------------------------------------------------------------------------- */
+#statement-section {
+  min-height: 100vh;
+  position: relative;
+  background-color: var(--asphalt);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 clamp(24px, 8vw, 140px);
+  text-align: center;
+  border-top: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.statement-label {
+  margin-bottom: 40px;
+}
+
+.statement-quote {
+  font-family: var(--font-display);
+  font-stretch: 125%;
+  font-weight: 300;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-size: clamp(36px, 5.5vw, 84px);
+  line-height: 1.15;
+  color: var(--bone);
+  max-width: 22ch;
+}
+
+.statement-word {
+  display: inline-block;
+  opacity: 0.15;
+  transition: opacity 0.12s linear;
+  will-change: opacity;
+}
+
+/* --------------------------------------------------------------------------
+   Section 3 — Dismantle (Pinned, 350vh, Interactive Hairline Callouts)
+   -------------------------------------------------------------------------- */
+#dismantle-wrapper {
+  height: 350vh;
+}
+
+.dismantle-header {
+  position: absolute;
+  top: clamp(80px, 10vh, 120px);
+  left: clamp(24px, 5vw, 64px);
+  z-index: 30;
+}
+
+.dismantle-label {
+  margin-bottom: 12px;
+}
+
+.dismantle-title {
+  font-size: clamp(40px, 6vw, 80px);
+  color: var(--bone);
+}
+
+/* Hairline Callouts SVG Canvas Layer */
+.dismantle-callouts-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 35;
+}
+
+.callout-group {
+  opacity: 0;
+  transition: opacity 0.6s var(--ease);
+}
+
+.callout-group.is-visible {
+  opacity: 1;
+}
+
+.callout-hairline {
+  stroke: var(--hairline-solid);
+  stroke-width: 1px;
+}
+
+.callout-dot {
+  width: 4px;
+  height: 4px;
+  background-color: var(--xenon);
+  position: absolute;
+  transform: translate(-50%, -50%);
+}
+
+.callout-text-box {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.callout-mono-label {
+  color: var(--xenon);
+}
+
+.callout-desc {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--bone);
+  line-height: 1.3;
+}
+
+/* --------------------------------------------------------------------------
+   Section 4 — Lineup (Hover Accordion, 100vh)
+   -------------------------------------------------------------------------- */
+#lineup-section {
+  min-height: 100vh;
+  position: relative;
+  background-color: var(--asphalt);
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid var(--hairline);
+  overflow: hidden;
+}
+
+.lineup-header {
+  padding: clamp(32px, 5vh, 48px) clamp(24px, 5vw, 64px) 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lineup-title {
+  font-size: clamp(28px, 4vw, 56px);
+  color: var(--bone);
+}
+
+/* Accordion Container */
+.lineup-accordion {
+  flex: 1;
+  display: flex;
+  width: 100%;
+  min-height: 580px;
+  border-top: 1px solid var(--hairline);
+  position: relative;
+}
+
+.accordion-slide {
+  position: relative;
+  flex: 1 1 0%;
+  min-width: 72px;
+  height: 100%;
+  border-right: 1px solid var(--hairline);
+  background-color: var(--asphalt);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: left;
+  transition: flex-grow 0.7s var(--ease), opacity 0.6s var(--ease), transform 0.6s var(--ease);
+  will-change: flex-grow;
+  padding: 24px;
+  outline: none;
+}
+
+.accordion-slide:last-child {
+  border-right: none;
+}
+
+/* Closed Slide Default State (~12vw flex weight) */
+.accordion-slide[aria-expanded="false"] {
+  flex-grow: 1;
+}
+
+/* Open Slide Active State (~52vw flex weight) */
+.accordion-slide[aria-expanded="true"] {
+  flex-grow: 5;
+}
+
+/* Closed Slide View: Top Mono Number + Rotated Name + Cropped Light Bar */
+.slide-closed-view {
+  position: absolute;
+  inset: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.3s var(--ease);
+  z-index: 5;
+}
+
+.accordion-slide[aria-expanded="true"] .slide-closed-view {
+  opacity: 0;
+}
+
+.slide-closed-number {
+  color: var(--fog);
+}
+
+.slide-closed-name-wrap {
+  position: absolute;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.slide-closed-name {
+  font-family: var(--font-hud);
+  font-size: 13px;
+  letter-spacing: 0.16em;
+  color: var(--bone);
+  white-space: nowrap;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+/* Car Image Layer */
+.slide-image-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.slide-car-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: filter 0.7s var(--ease), transform 0.7s var(--ease);
+  will-change: transform, filter;
+}
+
+/* In closed slide: cropped tight on front light bar, 25% brightness & grayscale */
+.accordion-slide[aria-expanded="false"] .slide-car-img {
+  object-position: right center;
+  filter: brightness(0.25) grayscale(1);
+  transform: translateX(0);
+}
+
+/* In open slide: full brightness/color, car slides in 6% from left */
+.accordion-slide[aria-expanded="true"] .slide-car-img {
+  object-position: center 72%;
+  filter: brightness(1) grayscale(0);
+  transform: translateX(0);
+  animation: car-drive-in 0.7s var(--ease) forwards;
+}
+
+@keyframes car-drive-in {
+  from {
+    transform: translateX(-6%);
+    opacity: 0.8;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Open Slide Content Overlay */
+.slide-open-view {
+  position: relative;
+  z-index: 10;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s var(--ease) 0.1s;
+}
+
+.accordion-slide[aria-expanded="true"] .slide-open-view {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.slide-top-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.slide-model-name {
+  font-size: clamp(36px, 5vw, 72px);
+  color: var(--bone);
+}
+
+.slide-bottom-details {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background-color: var(--asphalt);
+  padding: 16px 0 0;
+  margin-top: auto;
+}
+
+.slide-tagline {
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--bone);
+}
+
+.slide-specs-row {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  border-top: 1px solid var(--hairline);
+  padding-top: 14px;
+}
+
+.spec-column {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.spec-key {
+  font-size: 9px;
+  color: var(--fog);
+}
+
+.spec-value {
+  font-family: var(--font-hud);
+  font-size: 13px;
+  color: var(--bone);
+  font-variant-numeric: tabular-nums;
+}
+
+.slide-actions-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.swatch-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.swatch-box {
+  width: 12px;
+  height: 12px;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.swatch-box.is-active {
+  outline: 1px solid var(--bone);
+  outline-offset: 2px;
+}
+
+.slide-configure-link {
+  font-family: var(--font-hud);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--xenon);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-bottom: 1px solid var(--xenon);
+  padding-bottom: 2px;
+}
+
+.slide-configure-link:hover {
+  color: #FFFFFF;
+  border-color: #FFFFFF;
+}
+
+/* Stagger Entrance Animation for Slides */
+.accordion-slide.stagger-init {
+  opacity: 0;
+  transform: translateY(40px);
+}
+
+.accordion-slide.stagger-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Focus Visible State */
+.accordion-slide:focus-visible {
+  outline: 1px solid var(--xenon);
+  outline-offset: -1px;
+}
+
+/* --------------------------------------------------------------------------
+   Section 5 — Reserve Section (100vh)
+   -------------------------------------------------------------------------- */
+#reserve-section {
+  min-height: 100vh;
+  position: relative;
+  background-color: var(--asphalt);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 clamp(24px, 6vw, 64px);
+}
+
+.reserve-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  max-width: 680px;
+}
+
+.reserve-title {
+  font-size: clamp(48px, 8vw, 110px);
+  color: var(--bone);
+}
+
+.reserve-body {
+  font-family: var(--font-body);
+  font-size: clamp(15px, 1.2vw, 18px);
+  color: var(--fog);
+  line-height: 1.6;
+}
+
+.reserve-cta-btn {
+  margin-top: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 36px;
+  border: 1px solid var(--xenon);
+  background-color: transparent;
+  color: var(--xenon);
+  font-family: var(--font-hud);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  position: relative;
+  transition: background-color 0.24s var(--ease), color 0.24s var(--ease);
+}
+
+.btn-tick {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background-color: var(--taillight);
+  opacity: 0;
+  transition: opacity 0.24s var(--ease);
+}
+
+.reserve-cta-btn:hover,
+.reserve-cta-btn:focus-visible {
+  background-color: var(--xenon);
+  color: var(--asphalt);
+}
+
+.reserve-cta-btn:hover .btn-tick,
+.reserve-cta-btn:focus-visible .btn-tick {
+  opacity: 1;
+}
+
+/* --------------------------------------------------------------------------
+   Footer
+   -------------------------------------------------------------------------- */
+#footer {
+  border-top: 1px solid var(--hairline);
+  background-color: var(--asphalt);
+  padding: clamp(40px, 6vh, 64px) clamp(24px, 5vw, 64px) 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+.footer-top {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 40px;
+}
+
+.footer-wordmark {
+  font-size: clamp(28px, 4vw, 44px);
+  color: var(--bone);
+}
+
+.footer-cols {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(32px, 6vw, 72px);
+}
+
+.footer-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.footer-col-title {
+  color: var(--bone);
+  margin-bottom: 4px;
+}
+
+.footer-col-links {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.footer-col-link {
+  font-family: var(--font-hud);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--fog);
+  transition: color 0.2s var(--ease);
+}
+
+.footer-col-link:hover,
+.footer-col-link:focus-visible {
+  color: var(--bone);
+}
+
+.footer-bottom {
+  border-top: 1px solid var(--hairline);
+  padding-top: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.footer-copyright {
+  color: var(--fog);
+  font-size: 10px;
+}
+
+/* --------------------------------------------------------------------------
+   Mobile & Responsive Adaptations (< 768px)
+   -------------------------------------------------------------------------- */
+@media (max-width: 767px) {
+  #navbar {
+    padding: 0 20px;
+  }
+
+  .nav-links {
+    gap: 16px;
+  }
+
+  .nav-link {
+    font-size: 10px;
+  }
+
+  /* Accordion switches from horizontal columns to vertical 72px stacked rows */
+  .lineup-accordion {
+    flex-direction: column;
+    min-height: auto;
+    border-right: none;
+  }
+
+  .accordion-slide {
+    width: 100%;
+    min-width: 100%;
+    min-height: 72px;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--hairline);
+    padding: 16px 20px;
+  }
+
+  .accordion-slide[aria-expanded="false"] {
+    flex-grow: 0;
+    height: 72px;
+  }
+
+  .accordion-slide[aria-expanded="true"] {
+    flex-grow: 1;
+    min-height: 480px;
+  }
+
+  .slide-closed-view {
+    inset: 16px 20px;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .slide-closed-name-wrap {
+    position: static;
+    transform: none;
+  }
+
+  .slide-closed-name {
+    writing-mode: horizontal-tb;
+    transform: none;
+    font-size: 14px;
+  }
+
+  .accordion-slide[aria-expanded="false"] .slide-car-img {
+    object-position: 80% center;
+  }
+
+  .accordion-slide[aria-expanded="true"] .slide-car-img {
+    object-position: center 60%;
+  }
+
+  .hero-hud {
+    left: 20px;
+    bottom: 24px;
+  }
+
+  .hero-sky-container {
+    top: 72px;
+    left: 20px;
+    right: 20px;
+  }
+
+  .hero-gte-specs {
+    gap: 12px;
+  }
+
+  .dismantle-header {
+    top: 72px;
+    left: 20px;
+  }
+
+  .callout-text-box {
+    transform: scale(0.9) translate(-50%, -50%);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Accessibility: Prefers-Reduced-Motion
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  #custom-cursor {
+    display: none !important;
+  }
+
+  body.has-custom-cursor,
+  body.has-custom-cursor a,
+  body.has-custom-cursor button {
+    cursor: auto !important;
+  }
+
+  /* Disable sticky pinning in reduced motion */
+  .scrolly-wrapper {
+    height: auto !important;
+  }
+
+  .scrolly-stage {
+    position: relative !important;
+    height: 100vh !important;
+  }
+
+  .scrolly-canvas {
+    position: relative !important;
+  }
+
+  .line-inner {
+    transform: none !important;
+  }
+
+  .hero-chapter {
+    opacity: 1 !important;
+    transform: none !important;
+    position: relative !important;
+    margin-bottom: 32px;
+  }
+
+  .callout-group {
+    opacity: 1 !important;
+  }
+}
+
